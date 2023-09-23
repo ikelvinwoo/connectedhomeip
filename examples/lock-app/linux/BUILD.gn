@@ -14,30 +14,116 @@
 
 import("//build_overrides/build.gni")
 import("//build_overrides/chip.gni")
+import("${build_root}/config/compiler/compiler.gni")
 
-executable("chip-lock-app") {
+import("${chip_root}/src/lib/lib.gni")
+import("${chip_root}/src/platform/device.gni")
+
+# executable("chip-lock-app") {
+#   sources = [
+#     "main.cpp",
+#     "src/LockAppCommandDelegate.cpp",
+#   ]
+
+#   deps = [
+#     "${chip_root}/examples/lock-app/lock-common",
+#     "${chip_root}/examples/lock-app/lock-common:lock-cluster-service",
+#     "${chip_root}/examples/platform/linux:app-main",
+#     "${chip_root}/src/lib",
+#     "${chip_root}/third_party/jsoncpp",
+#   ]
+
+#   include_dirs = [ "include" ]
+
+#   cflags = [ "-Wconversion" ]
+
+#   output_dir = root_out_dir
+# }
+
+
+
+source_set("chip-lock-app-common") {
   sources = [
-    "main.cpp",
-    "src/LockAppCommandDelegate.cpp",
+    "${chip_root}/examples/lock-app/lock-common/include/LockEndpoint.h",
+    "${chip_root}/examples/lock-app/lock-common/include/LockManager.h",
+    "${chip_root}/examples/lock-app/lock-common/src/LockEndpoint.cpp",
+    "${chip_root}/examples/lock-app/lock-common/src/LockManager.cpp",
+    "${chip_root}/examples/lock-app/lock-common/src/ZCLDoorLockCallbacks.cpp",
   ]
 
-  deps = [
+  deps = [ "${chip_root}/examples/all-clusters-app/all-clusters-common" ]
+
+  include_dirs = [ "${chip_root}/examples/lock-app/lock-common/include" ]
+
+  cflags = [ "-Wconversion" ]
+}
+
+
+
+
+if (is_libfuzzer) {
+  executable("chip-lock-app-fuzzing") {
+    sources = [ "fuzzing-main.cpp" ]
+
+    deps = [
+        "${chip_root}/examples/lock-app/lock-common",
+        "${chip_root}/examples/lock-app/lock-common:lock-cluster-service",
+        "${chip_root}/examples/platform/linux:app-main",
+        "${chip_root}/src/lib",
+        "${chip_root}/third_party/jsoncpp",
+      ]
+
+    cflags = [ "-Wconversion" ]
+
+    output_dir = root_out_dir
+  }
+} else {
+    executable("chip-lock-app") {
+    sources = [
+    "main.cpp",
+    "src/LockAppCommandDelegate.cpp",
+    ]
+
+    deps = [
     "${chip_root}/examples/lock-app/lock-common",
     "${chip_root}/examples/lock-app/lock-common:lock-cluster-service",
     "${chip_root}/examples/platform/linux:app-main",
     "${chip_root}/src/lib",
     "${chip_root}/third_party/jsoncpp",
-  ]
+    ]
 
-  include_dirs = [ "include" ]
+    include_dirs = [ "include" ]
 
-  cflags = [ "-Wconversion" ]
+    cflags = [ "-Wconversion" ]
 
-  output_dir = root_out_dir
+    output_dir = root_out_dir
+    }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 group("linux") {
-  deps = [ ":chip-lock-app" ]
+  deps = []
+  if (is_libfuzzer) {
+    deps += [ ":chip-lock-app-fuzzing" ]
+  } else {
+    deps += [ ":chip-lock-app" ]
+  }
 }
 
 group("default") {
