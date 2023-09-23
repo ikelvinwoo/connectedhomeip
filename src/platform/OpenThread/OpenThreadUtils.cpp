@@ -67,7 +67,7 @@ bool FormatOpenThreadError(char * buf, uint16_t bufSize, CHIP_ERROR err)
 
 #if CHIP_CONFIG_SHORT_ERROR_STR
     const char * desc = NULL;
-#else  // CHIP_CONFIG_SHORT_ERROR_STR
+#else // CHIP_CONFIG_SHORT_ERROR_STR
     otError otErr     = (otError) err.GetValue();
     const char * desc = otThreadErrorToString(otErr);
 #endif // CHIP_CONFIG_SHORT_ERROR_STR
@@ -124,7 +124,7 @@ void LogOpenThreadStateChange(otInstance * otInst, uint32_t flags)
             meshPrefix.ToString(strBuf);
             ChipLogDetail(DeviceLayer, "   Mesh Prefix: %s/64", strBuf);
         }
-#if CHIP_CONFIG_SECURITY_TEST_MODE
+#if CHIP_CONFIG_SECURITY_TEST_MODE || CHIP_CONFIG_SECURITY_FUZZ_MODE
         {
             otNetworkKey otKey;
             otThreadGetNetworkKey(otInst, &otKey);
@@ -132,7 +132,7 @@ void LogOpenThreadStateChange(otInstance * otInst, uint32_t flags)
                 snprintf(&strBuf[i * 2], 3, "%02X", otKey.m8[i]);
             ChipLogDetail(DeviceLayer, "   Network Key: %s", strBuf);
         }
-#endif // CHIP_CONFIG_SECURITY_TEST_MODE
+#endif // CHIP_CONFIG_SECURITY_TEST_MODE || CHIP_CONFIG_SECURITY_FUZZ_MODE
     }
     if ((flags & OT_CHANGED_THREAD_PARTITION_ID) != 0)
     {
